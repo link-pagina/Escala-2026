@@ -1,6 +1,6 @@
 
 import React, { useState, useEffect, useMemo } from 'react';
-import { ChevronLeft, ChevronRight, Users, UserPlus, Sun, Moon } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Users, UserPlus, Sun, Moon, Calendar } from 'lucide-react';
 import { onSnapshot, collection } from 'firebase/firestore';
 import { db, SLOTS_COLLECTION } from './firebase';
 import { getDaysForMonth, getMonthName, getSlotId } from './utils/dateHelpers';
@@ -44,7 +44,7 @@ const App: React.FC = () => {
             <Users className="w-8 h-8 opacity-90" />
             <div className="flex flex-col">
               <h1 className="text-2xl font-bold leading-tight">Escala de Voluntários 2026</h1>
-              <p className="text-sm italic opacity-80">Domingos e Quartas</p>
+              <p className="text-sm italic opacity-80">Gestão Anual de Turnos</p>
             </div>
           </div>
 
@@ -69,7 +69,7 @@ const App: React.FC = () => {
               </button>
             </div>
 
-            <button className="bg-white text-[#4a36d1] font-bold px-6 py-2.5 rounded-xl flex items-center gap-2 shadow-lg hover:bg-slate-50 transition-all active:scale-95">
+            <button className="hidden md:flex bg-white text-[#4a36d1] font-bold px-6 py-2.5 rounded-xl items-center gap-2 shadow-lg hover:bg-slate-50 transition-all active:scale-95">
               <UserPlus className="w-5 h-5" />
               Pessoas
             </button>
@@ -89,20 +89,28 @@ const App: React.FC = () => {
               const isSunday = day.dayOfWeek === WeekDay.SUNDAY;
               const headerBg = isSunday ? "bg-[#FFF9F2]" : "bg-[#F5F7FF]";
               const accentColor = isSunday ? "text-orange-600" : "text-[#4a36d1]";
-              const dayName = day.date.toLocaleDateString('pt-BR', { weekday: 'long' }).split('-')[0].toUpperCase();
+              
+              // Formatação conforme solicitado: Domingo - 01/02/2026
+              const weekdayName = day.date.toLocaleDateString('pt-BR', { weekday: 'long' });
+              const capitalizedWeekday = weekdayName.charAt(0).toUpperCase() + weekdayName.slice(1).split('-')[0];
+              const formattedDate = day.date.toLocaleDateString('pt-BR', {
+                day: '2-digit',
+                month: '2-digit',
+                year: 'numeric'
+              });
 
               return (
                 <div key={idx} className="bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden transition-all hover:shadow-md">
-                  <div className={`px-6 py-4 flex items-center gap-4 ${headerBg}`}>
-                    <span className={`text-3xl font-black ${accentColor}`}>
-                      {day.date.getDate()}
-                    </span>
-                    <div className="flex flex-col leading-tight">
-                      <span className="text-[10px] font-bold text-slate-400 tracking-widest">
-                        {dayName}
-                      </span>
-                      <span className="text-base font-bold text-black uppercase">
-                        {getMonthName(currentMonth)}
+                  <div className={`px-6 py-5 flex items-center justify-between ${headerBg} border-b border-slate-50`}>
+                    <div className="flex items-center gap-3">
+                      <Calendar className={`w-5 h-5 ${accentColor} opacity-70`} />
+                      <h2 className={`text-lg md:text-xl font-extrabold tracking-tight ${accentColor}`}>
+                        {capitalizedWeekday} - {formattedDate}
+                      </h2>
+                    </div>
+                    <div className="hidden sm:block">
+                      <span className={`text-[10px] font-black uppercase px-2 py-1 rounded-md border ${isSunday ? 'border-orange-200 text-orange-600 bg-orange-50' : 'border-indigo-200 text-[#4a36d1] bg-indigo-50'}`}>
+                        {isSunday ? 'Culto de Domingo' : 'Culto de Quarta'}
                       </span>
                     </div>
                   </div>
@@ -117,7 +125,7 @@ const App: React.FC = () => {
                         <div key={sIdx} className="space-y-4">
                           <div className={`flex items-center gap-2 text-[11px] font-black uppercase tracking-wider ${shiftColor}`}>
                             {shiftIcon}
-                            PERÍODO {shift.type}
+                            TURNO {shift.type}
                           </div>
                           
                           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
