@@ -1,0 +1,5 @@
+{
+  "name": "Escala Voluntários 2026",
+  "description": "Sistema de gerenciamento de escala anual de voluntários para 2026 com salvamento em tempo real no Firebase Firestore.",
+  "requestFramePermissions": []
+}
