@@ -1,8 +1,13 @@
 
 import React, { useState, useEffect, useCallback } from 'react';
-import { CheckCircle2, Loader2, AlertCircle, User } from 'lucide-react';
+import { CheckCircle2, Loader2, AlertCircle, User, ChevronDown } from 'lucide-react';
 import { saveSlot } from '../firebase';
 import { ShiftType } from '../types';
+
+interface Volunteer {
+  id: string;
+  name: string;
+}
 
 interface SlotInputProps {
   slotId: string;
@@ -10,9 +15,10 @@ interface SlotInputProps {
   dateStr: string;
   shift: ShiftType;
   slotIndex: number;
+  availableVolunteers: Volunteer[];
 }
 
-const SlotInput: React.FC<SlotInputProps> = ({ slotId, initialValue, dateStr, shift, slotIndex }) => {
+const SlotInput: React.FC<SlotInputProps> = ({ slotId, initialValue, dateStr, shift, slotIndex, availableVolunteers }) => {
   const [value, setValue] = useState(initialValue);
   const [status, setStatus] = useState<'idle' | 'saving' | 'success' | 'error'>('idle');
 
@@ -20,13 +26,13 @@ const SlotInput: React.FC<SlotInputProps> = ({ slotId, initialValue, dateStr, sh
     setValue(initialValue);
   }, [initialValue]);
 
-  const handleSave = useCallback(async () => {
-    if (value === initialValue && status !== 'error') return;
+  const handleSave = useCallback(async (selectedName: string) => {
+    if (selectedName === initialValue) return;
     
     setStatus('saving');
     try {
       await saveSlot(slotId, {
-        volunteerName: value,
+        volunteerName: selectedName,
         date: dateStr,
         shift: shift,
         slotIndex: slotIndex
@@ -37,32 +43,40 @@ const SlotInput: React.FC<SlotInputProps> = ({ slotId, initialValue, dateStr, sh
       console.error("Error saving slot:", error);
       setStatus('error');
     }
-  }, [value, initialValue, slotId, dateStr, shift, slotIndex, status]);
+  }, [initialValue, slotId, dateStr, shift, slotIndex]);
 
-  const onKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === 'Enter') {
-      e.currentTarget.blur();
-    }
+  const handleChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const newValue = e.target.value;
+    setValue(newValue);
+    handleSave(newValue);
   };
 
   return (
-    <div className="relative flex items-center w-full">
-      <div className="absolute left-3 text-slate-300">
+    <div className="relative flex items-center w-full group">
+      <div className="absolute left-3 text-slate-400 z-10">
         <User className="w-4 h-4" />
       </div>
-      <input
-        type="text"
+      
+      <select
         value={value}
-        onChange={(e) => setValue(e.target.value)}
-        onBlur={handleSave}
-        onKeyDown={onKeyDown}
-        placeholder={`Pessoa ${slotIndex + 1}`}
-        className={`w-full pl-9 pr-10 py-3 text-sm border rounded-xl transition-all duration-200 outline-none
-          ${status === 'error' ? 'border-red-500 bg-red-50' : 'border-slate-200 bg-slate-50/50 focus:bg-white focus:border-indigo-400 focus:ring-4 focus:ring-indigo-50'}
+        onChange={handleChange}
+        className={`w-full pl-9 pr-10 py-3 text-sm appearance-none border rounded-xl transition-all duration-200 outline-none cursor-pointer
+          ${status === 'error' ? 'border-red-500 bg-red-50' : 'border-slate-200 bg-slate-50/50 hover:bg-white focus:bg-white focus:border-indigo-400 focus:ring-4 focus:ring-indigo-50'}
           ${status === 'success' ? 'border-green-500 bg-green-50' : ''}
+          ${!value ? 'text-slate-400 italic' : 'text-slate-900 font-medium'}
         `}
-      />
-      <div className="absolute right-3">
+      >
+        <option value="">Selecione um voluntário...</option>
+        {availableVolunteers
+          .sort((a,b) => a.name.localeCompare(b.name))
+          .map((v) => (
+            <option key={v.id} value={v.name}>
+              {v.name}
+            </option>
+          ))}
+      </select>
+
+      <div className="absolute right-3 flex items-center gap-2 pointer-events-none">
         {status === 'saving' && (
           <Loader2 className="w-4 h-4 text-indigo-500 animate-spin" />
         )}
@@ -71,6 +85,9 @@ const SlotInput: React.FC<SlotInputProps> = ({ slotId, initialValue, dateStr, sh
         )}
         {status === 'error' && (
           <AlertCircle className="w-4 h-4 text-red-500" />
+        )}
+        {status === 'idle' && (
+          <ChevronDown className="w-4 h-4 text-slate-300 group-hover:text-indigo-400 transition-colors" />
         )}
       </div>
     </div>

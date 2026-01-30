@@ -1,6 +1,6 @@
 
 import { initializeApp, getApp, getApps } from "firebase/app";
-import { getFirestore, doc, setDoc } from "firebase/firestore";
+import { getFirestore, doc, setDoc, addDoc, collection, deleteDoc } from "firebase/firestore";
 
 // Configuração oficial do Firebase fornecida pelo usuário
 const firebaseConfig = {
@@ -17,11 +17,10 @@ const app = !getApps().length ? initializeApp(firebaseConfig) : getApp();
 export const db = getFirestore(app);
 
 export const SLOTS_COLLECTION = "volunteer_slots_2026";
+export const VOLUNTEERS_COLLECTION = "volunteers_list";
 
 /**
  * Salva um voluntário em um slot específico.
- * @param slotId ID único do slot (ex: 2026-01-01-morning-0)
- * @param data Dados do voluntário e do turno
  */
 export const saveSlot = async (slotId: string, data: { volunteerName: string, date: string, shift: string, slotIndex: number }) => {
   try {
@@ -32,6 +31,35 @@ export const saveSlot = async (slotId: string, data: { volunteerName: string, da
     }, { merge: true });
   } catch (error) {
     console.error("Erro crítico ao salvar no Firestore:", error);
+    throw error;
+  }
+};
+
+/**
+ * Adiciona uma nova pessoa à lista de voluntários disponíveis.
+ */
+export const addVolunteerToList = async (name: string) => {
+  try {
+    const colRef = collection(db, VOLUNTEERS_COLLECTION);
+    await addDoc(colRef, {
+      name,
+      createdAt: new Date().toISOString()
+    });
+  } catch (error) {
+    console.error("Erro ao adicionar voluntário:", error);
+    throw error;
+  }
+};
+
+/**
+ * Remove uma pessoa da lista de voluntários.
+ */
+export const removeVolunteerFromList = async (id: string) => {
+  try {
+    const docRef = doc(db, VOLUNTEERS_COLLECTION, id);
+    await deleteDoc(docRef);
+  } catch (error) {
+    console.error("Erro ao remover voluntário:", error);
     throw error;
   }
 };
