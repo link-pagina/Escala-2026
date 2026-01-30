@@ -14,6 +14,8 @@ const App: React.FC = () => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    if (!db) return;
+
     const unsub = onSnapshot(collection(db, SLOTS_COLLECTION), (snapshot) => {
       const data: Record<string, string> = {};
       snapshot.forEach((doc) => {
@@ -36,10 +38,8 @@ const App: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-[#FDFDFF] text-slate-900 pb-24">
-      {/* Header Estilo Novo Imagem */}
       <header className="bg-[#4a36d1] text-white px-4 py-6 md:px-12 sticky top-0 z-50">
         <div className="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between gap-6">
-          {/* Lado Esquerdo: Branding */}
           <div className="flex items-center gap-4">
             <Users className="w-8 h-8 opacity-90" />
             <div className="flex flex-col">
@@ -48,9 +48,7 @@ const App: React.FC = () => {
             </div>
           </div>
 
-          {/* Lado Direito: Controles */}
           <div className="flex items-center gap-4">
-            {/* Navegação de Mês */}
             <div className="flex items-center bg-white rounded-xl overflow-hidden px-2 py-1 border border-white/10 shadow-lg">
               <button 
                 onClick={prevMonth} 
@@ -71,7 +69,6 @@ const App: React.FC = () => {
               </button>
             </div>
 
-            {/* Botão Pessoas */}
             <button className="bg-white text-[#4a36d1] font-bold px-6 py-2.5 rounded-xl flex items-center gap-2 shadow-lg hover:bg-slate-50 transition-all active:scale-95">
               <UserPlus className="w-5 h-5" />
               Pessoas
@@ -84,6 +81,7 @@ const App: React.FC = () => {
         {loading ? (
           <div className="flex flex-col items-center justify-center py-20 gap-4">
             <div className="w-10 h-10 border-4 border-indigo-100 border-t-indigo-600 rounded-full animate-spin"></div>
+            <p className="text-slate-400 font-medium">Carregando escala...</p>
           </div>
         ) : (
           <div className="space-y-6">
@@ -95,7 +93,6 @@ const App: React.FC = () => {
 
               return (
                 <div key={idx} className="bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden transition-all hover:shadow-md">
-                  {/* Cabeçalho do Card */}
                   <div className={`px-6 py-4 flex items-center gap-4 ${headerBg}`}>
                     <span className={`text-3xl font-black ${accentColor}`}>
                       {day.date.getDate()}
@@ -110,7 +107,6 @@ const App: React.FC = () => {
                     </div>
                   </div>
 
-                  {/* Turnos */}
                   <div className="p-6 space-y-8">
                     {day.shifts.map((shift, sIdx) => {
                       const isMorning = shift.type === ShiftType.MORNING;
