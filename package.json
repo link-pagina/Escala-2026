@@ -1,23 +1,13 @@
 {
-  "name": "escala-voluntários-2026",
-  "private": true,
-  "version": "0.0.0",
-  "type": "module",
+  "name": "escala-voluntarios-2026",
+  "version": "1.0.0",
   "scripts": {
-    "dev": "vite",
+    "dev": "vite --port 3000 --host 0.0.0.0",
     "build": "vite build",
-    "preview": "vite preview"
-  },
-  "dependencies": {
-    "react": "^19.2.4",
-    "react-dom": "^19.2.4",
-    "lucide-react": "0.469.0",
-    "firebase": "^12.8.0"
+    "preview": "vite preview --port 3000 --host 0.0.0.0",
+    "lint": "echo 'No linting needed for single-file HTML project'"
   },
   "devDependencies": {
-    "@types/node": "^22.14.0",
-    "@vitejs/plugin-react": "^5.0.0",
-    "typescript": "~5.8.2",
     "vite": "^6.2.0"
   }
 }
