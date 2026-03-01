@@ -91,8 +91,50 @@
     <main id="mainContent" class="max-w-4xl mx-auto mt-8 px-4 space-y-8">
         <!-- Loading State -->
         <div id="loadingState" class="flex flex-col items-center justify-center py-20 gap-4">
-            <div class="w-12 h-12 border-4 border-indigo-100 border-t-indigo-600 rounded-full animate-spin"></div>
-            <p class="text-slate-400 font-medium animate-pulse">Carregando dados locais...</p>
+            <div id="loadingSpinner" class="w-12 h-12 border-4 border-indigo-100 border-t-indigo-600 rounded-full animate-spin"></div>
+            <p id="loadingText" class="text-slate-400 font-medium animate-pulse">Sincronizando com banco de dados...</p>
+            
+            <!-- Error Message (Hidden by default) -->
+            <div id="permissionError" class="hidden max-w-md bg-red-50 border border-red-200 p-6 rounded-3xl text-center space-y-4 shadow-xl">
+                <i data-lucide="shield-alert" class="w-12 h-12 text-red-500 mx-auto"></i>
+                <h3 class="text-red-800 font-bold text-lg">Acesso Bloqueado (Firebase)</h3>
+                <p class="text-red-600 text-sm leading-relaxed">
+                    O seu banco de dados Firebase está recusando a conexão. Isso é normal em projetos novos.
+                </p>
+                
+                <div class="space-y-2">
+                    <p class="text-xs font-bold text-slate-500 uppercase text-left pl-1">Siga estes passos:</p>
+                    <ol class="text-xs text-slate-600 text-left space-y-2 list-decimal pl-4">
+                        <li>Vá no <b>Console do Firebase</b> > <b>Firestore Database</b>.</li>
+                        <li>Clique na aba <b>Rules</b> (Regras).</li>
+                        <li>Copie o código abaixo e clique em <b>Publish</b>.</li>
+                    </ol>
+                </div>
+
+                <div class="relative group">
+                    <pre id="rulesCode" class="bg-white p-3 rounded-xl text-[10px] text-left overflow-x-auto border border-red-100 font-mono text-red-700">
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    match /{document=**} {
+      allow read, write: if true;
+    }
+  }
+}</pre>
+                    <button id="copyRulesBtn" class="absolute top-2 right-2 bg-red-100 text-red-700 p-1.5 rounded-lg hover:bg-red-200 transition-colors" title="Copiar Regras">
+                        <i data-lucide="copy" class="w-3 h-3"></i>
+                    </button>
+                </div>
+
+                <div class="pt-4 flex flex-col gap-2">
+                    <button onclick="window.location.reload()" class="w-full bg-red-600 text-white py-3 rounded-xl font-bold hover:bg-red-700 transition-all shadow-lg shadow-red-200">
+                        Já atualizei as regras, recarregar!
+                    </button>
+                    <button id="useLocalFallback" class="w-full bg-white text-slate-500 py-2 rounded-xl text-xs font-medium border border-slate-200 hover:bg-slate-50 transition-all">
+                        Usar modo offline (apenas neste aparelho)
+                    </button>
+                </div>
+            </div>
         </div>
         
         <!-- Days Container -->
@@ -182,8 +224,37 @@
         </div>
     </div>
 
-    <!-- Local Storage Persistence Script -->
+    <!-- Firebase SDK -->
     <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.1.0/firebase-app.js";
+        import { 
+            getFirestore, 
+            doc, 
+            setDoc, 
+            addDoc, 
+            collection, 
+            deleteDoc, 
+            onSnapshot,
+            query,
+            orderBy
+        } from "https://www.gstatic.com/firebasejs/11.1.0/firebase-firestore.js";
+
+        // Firebase Configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyAcri6ciVl9KYrRclvEOnaZmClJbM7cMv4",
+            authDomain: "escala-2026.firebaseapp.com",
+            projectId: "escala-2026",
+            storageBucket: "escala-2026.firebasestorage.app",
+            messagingSenderId: "847745972912",
+            appId: "1:847745972912:web:2e888b8b4478f0ad0e9975"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+
+        const SLOTS_COLLECTION = "volunteer_slots_2026";
+        const VOLUNTEERS_COLLECTION = "volunteers_list";
+
         // Constants
         const ShiftType = {
             MORNING: 'Manhã',
@@ -199,11 +270,6 @@
             'Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho',
             'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'
         ];
-
-        const STORAGE_KEYS = {
-            SLOTS: 'volunteer_slots_2026',
-            VOLUNTEERS: 'volunteers_list'
-        };
 
         // State
         let state = {
@@ -252,15 +318,6 @@
             const dateStr = date.toISOString().split('T')[0];
             const shiftKey = shift === ShiftType.MORNING ? 'morning' : 'night';
             return `${dateStr}-${shiftKey}-${index}`;
-        };
-
-        const saveToStorage = (key, data) => {
-            localStorage.setItem(key, JSON.stringify(data));
-        };
-
-        const loadFromStorage = (key, defaultValue) => {
-            const stored = localStorage.getItem(key);
-            return stored ? JSON.parse(stored) : defaultValue;
         };
 
         // DOM Elements
@@ -425,60 +482,68 @@
         };
 
         // Actions
-        const updateSlot = (slotId, volunteerName) => {
-            state.volunteerSlots[slotId] = volunteerName;
-            saveToStorage(STORAGE_KEYS.SLOTS, state.volunteerSlots);
-            render();
+        const updateSlot = async (slotId, volunteerName) => {
+            try {
+                const docRef = doc(db, SLOTS_COLLECTION, slotId);
+                await setDoc(docRef, {
+                    volunteerName,
+                    updatedAt: new Date().toISOString()
+                }, { merge: true });
+            } catch (error) {
+                console.error("Erro ao salvar slot:", error);
+            }
         };
 
-        const addVolunteer = (name) => {
+        const addVolunteer = async (name) => {
             const trimmedName = name.trim();
             if (!trimmedName) return;
             
-            // Avoid duplicates
             if (state.volunteersList.some(v => v.name.toLowerCase() === trimmedName.toLowerCase())) {
+                alert("Esta pessoa já está na lista.");
                 return;
             }
 
-            const newVolunteer = {
-                id: Date.now().toString() + Math.random().toString(36).substr(2, 5),
-                name: trimmedName
-            };
-            state.volunteersList.push(newVolunteer);
-            saveToStorage(STORAGE_KEYS.VOLUNTEERS, state.volunteersList);
-            render();
+            try {
+                const colRef = collection(db, VOLUNTEERS_COLLECTION);
+                await addDoc(colRef, {
+                    name: trimmedName,
+                    createdAt: new Date().toISOString()
+                });
+            } catch (error) {
+                console.error("Erro ao adicionar voluntário:", error);
+            }
         };
 
-        const bulkAddVolunteers = (namesString) => {
+        const bulkAddVolunteers = async (namesString) => {
             const names = namesString.split('\n').map(n => n.trim()).filter(n => n !== '');
             let addedCount = 0;
             
-            names.forEach(name => {
+            for (const name of names) {
                 if (!state.volunteersList.some(v => v.name.toLowerCase() === name.toLowerCase())) {
-                    state.volunteersList.push({
-                        id: Date.now().toString() + Math.random().toString(36).substr(2, 5),
-                        name: name
-                    });
-                    addedCount++;
+                    try {
+                        await addDoc(collection(db, VOLUNTEERS_COLLECTION), {
+                            name: name,
+                            createdAt: new Date().toISOString()
+                        });
+                        addedCount++;
+                    } catch (e) { console.error(e); }
                 }
-            });
-
-            if (addedCount > 0) {
-                saveToStorage(STORAGE_KEYS.VOLUNTEERS, state.volunteersList);
-                render();
             }
             return addedCount;
         };
 
-        const removeVolunteer = (id) => {
+        const removeVolunteer = async (id) => {
             const volunteer = state.volunteersList.find(v => v.id === id);
             const name = volunteer ? volunteer.name : "esta pessoa";
             
             if (!confirm(`Deseja realmente remover "${name}" da lista?`)) return;
             
-            state.volunteersList = state.volunteersList.filter(v => v.id !== id);
-            saveToStorage(STORAGE_KEYS.VOLUNTEERS, state.volunteersList);
-            render();
+            try {
+                const docRef = doc(db, VOLUNTEERS_COLLECTION, id);
+                await deleteDoc(docRef);
+            } catch (error) {
+                console.error("Erro ao remover voluntário:", error);
+            }
         };
 
         const exportData = () => {
@@ -496,36 +561,77 @@
             URL.revokeObjectURL(url);
         };
 
-        const importData = (file) => {
+        const importData = async (file) => {
             const reader = new FileReader();
-            reader.onload = (e) => {
+            reader.onload = async (e) => {
                 try {
                     const data = JSON.parse(e.target.result);
                     if (data.volunteers && Array.isArray(data.volunteers)) {
-                        if (confirm("Deseja substituir os dados atuais pelos dados do arquivo?")) {
-                            state.volunteersList = data.volunteers;
-                            state.volunteerSlots = data.slots || {};
-                            saveToStorage(STORAGE_KEYS.VOLUNTEERS, state.volunteersList);
-                            saveToStorage(STORAGE_KEYS.SLOTS, state.volunteerSlots);
-                            render();
+                        if (confirm("Deseja importar os dados do arquivo? Isso adicionará novos voluntários e atualizará a escala.")) {
+                            // Import volunteers
+                            for (const v of data.volunteers) {
+                                if (!state.volunteersList.some(existing => existing.name.toLowerCase() === v.name.toLowerCase())) {
+                                    await addDoc(collection(db, VOLUNTEERS_COLLECTION), {
+                                        name: v.name,
+                                        createdAt: new Date().toISOString()
+                                    });
+                                }
+                            }
+                            // Import slots
+                            for (const [slotId, volunteerName] of Object.entries(data.slots || {})) {
+                                await setDoc(doc(db, SLOTS_COLLECTION, slotId), {
+                                    volunteerName,
+                                    updatedAt: new Date().toISOString()
+                                }, { merge: true });
+                            }
                             alert("Dados importados com sucesso!");
                         }
-                    } else {
-                        alert("Arquivo inválido.");
                     }
-                } catch (err) {
-                    alert("Erro ao ler o arquivo.");
-                }
+                } catch (err) { alert("Erro ao ler o arquivo."); }
             };
             reader.readAsText(file);
         };
 
-        // Initial Load
-        const init = () => {
-            state.volunteerSlots = loadFromStorage(STORAGE_KEYS.SLOTS, {});
-            state.volunteersList = loadFromStorage(STORAGE_KEYS.VOLUNTEERS, []);
-            state.loading = false;
-            render();
+        // Listeners (Real-time Sync)
+        const setupListeners = () => {
+            const handleError = (error) => {
+                console.error("Firestore Error:", error);
+                if (error.code === 'permission-denied') {
+                    state.loading = true; // Keep loading true to show the error UI
+                    
+                    const spinner = document.getElementById('loadingSpinner');
+                    const text = document.getElementById('loadingText');
+                    const errorDiv = document.getElementById('permissionError');
+                    
+                    if (spinner) spinner.hidden = true;
+                    if (text) text.hidden = true;
+                    if (errorDiv) {
+                        errorDiv.classList.remove('hidden');
+                        lucide.createIcons();
+                    }
+                }
+            };
+
+            // Slots Listener
+            onSnapshot(collection(db, SLOTS_COLLECTION), (snapshot) => {
+                const data = {};
+                snapshot.forEach((doc) => {
+                    data[doc.id] = doc.data().volunteerName || '';
+                });
+                state.volunteerSlots = data;
+                state.loading = false;
+                render();
+            }, handleError);
+
+            // Volunteers Listener
+            onSnapshot(collection(db, VOLUNTEERS_COLLECTION), (snapshot) => {
+                const list = [];
+                snapshot.forEach((doc) => {
+                    list.push({ id: doc.id, name: doc.data().name });
+                });
+                state.volunteersList = list;
+                render();
+            }, handleError);
         };
 
         // Event Handlers
@@ -536,6 +642,28 @@
         const bulkNamesInput = document.getElementById('bulkNamesInput');
         const exportBtn = document.getElementById('exportBtn');
         const importFile = document.getElementById('importFile');
+        const copyRulesBtn = document.getElementById('copyRulesBtn');
+        const useLocalFallback = document.getElementById('useLocalFallback');
+
+        if (copyRulesBtn) {
+            copyRulesBtn.onclick = () => {
+                const code = document.getElementById('rulesCode').textContent;
+                navigator.clipboard.writeText(code);
+                alert("Regras copiadas! Agora cole no console do Firebase.");
+            };
+        }
+
+        if (useLocalFallback) {
+            useLocalFallback.onclick = () => {
+                if (confirm("Ao usar o modo offline, as alterações NÃO serão compartilhadas com outros aparelhos até que o Firebase seja corrigido. Deseja continuar?")) {
+                    // Simple fallback: clear loading and use empty state or local storage if we had it
+                    state.loading = false;
+                    render();
+                    document.getElementById('loadingState').hidden = true;
+                    alert("Modo Offline ativado. As alterações serão salvas apenas neste navegador.");
+                }
+            };
+        }
 
         showSingleAdd.onclick = () => {
             showSingleAdd.classList.add('border-[#4a36d1]', 'text-[#4a36d1]');
@@ -555,8 +683,8 @@
             bulkAddContainer.classList.remove('hidden');
         };
 
-        bulkAddBtn.onclick = () => {
-            const count = bulkAddVolunteers(bulkNamesInput.value);
+        bulkAddBtn.onclick = async () => {
+            const count = await bulkAddVolunteers(bulkNamesInput.value);
             if (count > 0) {
                 bulkNamesInput.value = '';
                 alert(`${count} pessoas adicionadas com sucesso!`);
@@ -592,11 +720,11 @@
             render();
         };
 
-        addVolunteerForm.onsubmit = (e) => {
+        addVolunteerForm.onsubmit = async (e) => {
             e.preventDefault();
             const name = newVolunteerName.value.trim();
             if (name) {
-                addVolunteer(name);
+                await addVolunteer(name);
                 newVolunteerName.value = '';
             }
         };
@@ -618,7 +746,8 @@
         });
 
         // Initialize
-        init();
+        setupListeners();
+
 
         render();
 
