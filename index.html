@@ -10,29 +10,30 @@
     <script src="https://cdn.tailwindcss.com"></script>
     
     <!-- Google Fonts -->
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@400;500;600;700&display=swap" rel="stylesheet">
     
     <!-- Lucide Icons -->
     <script src="https://unpkg.com/lucide@latest"></script>
 
     <style>
         body {
-            font-family: 'Inter', sans-serif;
-            background-color: #FDFDFF;
+            font-family: 'Quicksand', sans-serif;
+            background-color: #000000;
+            color: #FACC15;
             margin: 0;
         }
         ::-webkit-scrollbar {
             width: 8px;
         }
         ::-webkit-scrollbar-track {
-            background: #f1f1f1;
+            background: #121212;
         }
         ::-webkit-scrollbar-thumb {
-            background: #4a36d1;
+            background: #EAB308;
             border-radius: 10px;
         }
         ::-webkit-scrollbar-thumb:hover {
-            background: #3b2ab8;
+            background: #CA8A04;
         }
         .custom-scrollbar::-webkit-scrollbar {
             width: 6px;
@@ -51,36 +52,55 @@
         .animate-zoom-in { animation: zoomIn 0.2s ease-out forwards; }
         
         [hidden] { display: none !important; }
+
+        /* Custom Select Styling */
+        select.slot-select {
+            background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%23EAB308' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e");
+            background-position: right 0.5rem center;
+            background-repeat: no-repeat;
+            background-size: 1.5em 1.5em;
+            padding-right: 2.5rem;
+            -webkit-appearance: none;
+            -moz-appearance: none;
+            appearance: none;
+        }
+        select.slot-select option {
+            background-color: #000000;
+            color: #FACC15;
+            font-family: 'Quicksand', sans-serif;
+        }
     </style>
 </head>
-<body class="min-h-screen text-slate-900 pb-24">
+<body class="min-h-screen bg-black text-yellow-400 pb-24">
 
     <!-- Header -->
-    <header class="bg-[#4a36d1] text-white px-4 py-6 md:px-12 sticky top-0 z-50">
+    <header class="bg-zinc-900/80 backdrop-blur-md text-yellow-500 px-4 py-6 md:px-12 sticky top-0 z-50 border-b border-yellow-500/20">
         <div class="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between gap-6">
             <div class="flex items-center gap-4">
-                <i data-lucide="users" class="w-8 h-8 opacity-90"></i>
+                <div class="p-3 bg-yellow-500/10 rounded-2xl border border-yellow-500/20">
+                    <i data-lucide="users" class="w-8 h-8 text-yellow-500"></i>
+                </div>
                 <div class="flex flex-col">
-                    <h1 class="text-2xl font-bold leading-tight tracking-tight">Escala de Voluntários 2026</h1>
-                    <p class="text-sm italic opacity-80">Gestão de Equipes e Turnos</p>
+                    <h1 class="text-2xl font-black leading-tight tracking-tighter uppercase">Escala 2026</h1>
+                    <p class="text-[10px] font-bold tracking-[0.2em] uppercase opacity-60">Gestão de Equipes</p>
                 </div>
             </div>
 
             <div class="flex items-center gap-4">
-                <div class="flex items-center bg-white rounded-xl overflow-hidden px-2 py-1 border border-white/10 shadow-lg">
-                    <button id="prevMonthBtn" class="p-2 hover:bg-slate-100 rounded-lg transition-colors text-slate-400">
+                <div class="flex items-center bg-black rounded-2xl overflow-hidden px-2 py-1 border border-yellow-500/30 shadow-2xl">
+                    <button id="prevMonthBtn" class="p-2 hover:bg-yellow-500/10 rounded-xl transition-colors text-yellow-500/50 hover:text-yellow-500">
                         <i data-lucide="chevron-left" class="w-5 h-5"></i>
                     </button>
-                    <span id="currentMonthLabel" class="text-xl font-black px-4 min-w-[180px] text-center text-black">
+                    <span id="currentMonthLabel" class="text-sm font-black px-6 min-w-[160px] text-center text-yellow-500 uppercase tracking-widest">
                         Janeiro 2026
                     </span>
-                    <button id="nextMonthBtn" class="p-2 hover:bg-slate-100 rounded-lg transition-colors text-slate-400">
+                    <button id="nextMonthBtn" class="p-2 hover:bg-yellow-500/10 rounded-xl transition-colors text-yellow-500/50 hover:text-yellow-500">
                         <i data-lucide="chevron-right" class="w-5 h-5"></i>
                     </button>
                 </div>
 
-                <button id="openModalBtn" class="bg-white text-[#4a36d1] font-bold px-6 py-2.5 rounded-xl flex items-center gap-2 shadow-lg hover:bg-slate-50 transition-all active:scale-95 whitespace-nowrap">
-                    <i data-lucide="user-plus" class="w-5 h-5"></i>
+                <button id="openModalBtn" class="bg-yellow-500 text-black font-black px-6 py-3 rounded-2xl flex items-center gap-2 shadow-[0_0_20px_rgba(234,179,8,0.3)] hover:bg-yellow-400 transition-all active:scale-95 whitespace-nowrap uppercase text-xs tracking-widest">
+                    <i data-lucide="user-plus" class="w-4 h-4"></i>
                     Pessoas
                 </button>
             </div>
@@ -88,31 +108,35 @@
     </header>
 
     <!-- Main Content -->
-    <main id="mainContent" class="max-w-4xl mx-auto mt-8 px-4 space-y-8">
+    <main id="mainContent" class="max-w-4xl mx-auto mt-12 px-4 space-y-12">
         <!-- Loading State -->
-        <div id="loadingState" class="flex flex-col items-center justify-center py-20 gap-4">
-            <div id="loadingSpinner" class="w-12 h-12 border-4 border-indigo-100 border-t-indigo-600 rounded-full animate-spin"></div>
-            <p id="loadingText" class="text-slate-400 font-medium animate-pulse">Sincronizando com banco de dados...</p>
+        <div id="loadingState" class="flex flex-col items-center justify-center py-20 gap-6">
+            <div id="loadingSpinner" class="w-16 h-16 border-4 border-yellow-500/10 border-t-yellow-500 rounded-full animate-spin"></div>
+            <p id="loadingText" class="text-yellow-500/60 font-black uppercase tracking-[0.2em] text-xs animate-pulse">Sincronizando Dados...</p>
             
             <!-- Error Message (Hidden by default) -->
-            <div id="permissionError" class="hidden max-w-md bg-red-50 border border-red-200 p-6 rounded-3xl text-center space-y-4 shadow-xl">
-                <i data-lucide="shield-alert" class="w-12 h-12 text-red-500 mx-auto"></i>
-                <h3 class="text-red-800 font-bold text-lg">Acesso Bloqueado (Firebase)</h3>
-                <p class="text-red-600 text-sm leading-relaxed">
-                    O seu banco de dados Firebase está recusando a conexão. Isso é normal em projetos novos.
-                </p>
-                
+            <div id="permissionError" class="hidden max-w-md bg-zinc-900 border border-red-500/30 p-8 rounded-[32px] text-center space-y-6 shadow-2xl">
+                <div class="w-16 h-16 bg-red-500/10 rounded-full flex items-center justify-center mx-auto border border-red-500/20">
+                    <i data-lucide="shield-alert" class="w-8 h-8 text-red-500"></i>
+                </div>
                 <div class="space-y-2">
-                    <p class="text-xs font-bold text-slate-500 uppercase text-left pl-1">Siga estes passos:</p>
-                    <ol class="text-xs text-slate-600 text-left space-y-2 list-decimal pl-4">
-                        <li>Vá no <b>Console do Firebase</b> > <b>Firestore Database</b>.</li>
-                        <li>Clique na aba <b>Rules</b> (Regras).</li>
-                        <li>Copie o código abaixo e clique em <b>Publish</b>.</li>
+                    <h3 class="text-red-500 font-black text-xl uppercase tracking-tight">Acesso Bloqueado</h3>
+                    <p class="text-zinc-400 text-sm leading-relaxed">
+                        O Firebase recusou a conexão. Siga os passos abaixo para liberar o acesso.
+                    </p>
+                </div>
+                
+                <div class="space-y-3 bg-black/40 p-5 rounded-2xl border border-white/5">
+                    <p class="text-[10px] font-black text-zinc-500 uppercase text-left tracking-widest">Procedimento:</p>
+                    <ol class="text-xs text-zinc-400 text-left space-y-3 list-decimal pl-4">
+                        <li>Acesse o <b>Console do Firebase</b>.</li>
+                        <li>Vá em <b>Firestore Database</b> > <b>Rules</b>.</li>
+                        <li>Substitua pelo código abaixo e clique em <b>Publish</b>.</li>
                     </ol>
                 </div>
 
                 <div class="relative group">
-                    <pre id="rulesCode" class="bg-white p-3 rounded-xl text-[10px] text-left overflow-x-auto border border-red-100 font-mono text-red-700">
+                    <pre id="rulesCode" class="bg-black p-4 rounded-xl text-[10px] text-left overflow-x-auto border border-white/10 font-mono text-yellow-500/80">
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
@@ -121,104 +145,108 @@ service cloud.firestore {
     }
   }
 }</pre>
-                    <button id="copyRulesBtn" class="absolute top-2 right-2 bg-red-100 text-red-700 p-1.5 rounded-lg hover:bg-red-200 transition-colors" title="Copiar Regras">
+                    <button id="copyRulesBtn" class="absolute top-2 right-2 bg-yellow-500 text-black p-2 rounded-lg hover:bg-yellow-400 transition-colors" title="Copiar Regras">
                         <i data-lucide="copy" class="w-3 h-3"></i>
                     </button>
                 </div>
 
-                <div class="pt-4 flex flex-col gap-2">
-                    <button onclick="window.location.reload()" class="w-full bg-red-600 text-white py-3 rounded-xl font-bold hover:bg-red-700 transition-all shadow-lg shadow-red-200">
-                        Já atualizei as regras, recarregar!
+                <div class="pt-4 flex flex-col gap-3">
+                    <button onclick="window.location.reload()" class="w-full bg-yellow-500 text-black py-4 rounded-2xl font-black uppercase tracking-widest text-xs hover:bg-yellow-400 transition-all shadow-[0_0_30px_rgba(234,179,8,0.2)]">
+                        Regras Atualizadas!
                     </button>
-                    <button id="useLocalFallback" class="w-full bg-white text-slate-500 py-2 rounded-xl text-xs font-medium border border-slate-200 hover:bg-slate-50 transition-all">
-                        Usar modo offline (apenas neste aparelho)
+                    <button id="useLocalFallback" class="w-full bg-transparent text-zinc-500 py-3 rounded-2xl text-[10px] font-black uppercase tracking-widest border border-white/10 hover:bg-white/5 transition-all">
+                        Modo Offline Local
                     </button>
                 </div>
             </div>
         </div>
         
         <!-- Days Container -->
-        <div id="daysContainer" class="space-y-6" hidden></div>
+        <div id="daysContainer" class="space-y-10" hidden></div>
 
         <!-- Empty State -->
-        <div id="emptyState" class="text-center py-24 bg-white rounded-[40px] border-2 border-dashed border-slate-200" hidden>
-            <i data-lucide="calendar" class="w-12 h-12 text-slate-200 mx-auto mb-4"></i>
-            <p class="text-slate-400 font-semibold">Nenhuma escala definida para este mês.</p>
+        <div id="emptyState" class="text-center py-32 bg-zinc-900 rounded-[48px] border-2 border-dashed border-yellow-500/10" hidden>
+            <i data-lucide="calendar" class="w-16 h-16 text-yellow-500/10 mx-auto mb-6"></i>
+            <p class="text-yellow-500/30 font-black uppercase tracking-widest text-sm">Sem escala para este período.</p>
         </div>
     </main>
 
     <!-- Volunteer Modal -->
-    <div id="volunteerModal" class="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm animate-fade-in" hidden>
-        <div class="bg-white w-full max-w-md rounded-3xl shadow-2xl overflow-hidden animate-zoom-in">
-            <div class="bg-[#4a36d1] p-6 flex items-center justify-between text-white">
-                <div class="flex items-center gap-3">
-                    <i data-lucide="user-plus" class="w-6 h-6"></i>
-                    <h2 class="text-xl font-bold">Cadastro de Pessoas</h2>
+    <div id="volunteerModal" class="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/80 backdrop-blur-xl animate-fade-in" hidden>
+        <div class="bg-zinc-900 w-full max-w-md rounded-[40px] shadow-[0_0_50px_rgba(0,0,0,0.5)] overflow-hidden animate-zoom-in border border-white/5">
+            <div class="bg-yellow-500 p-8 flex items-center justify-between text-black">
+                <div class="flex items-center gap-4">
+                    <div class="p-2 bg-black/10 rounded-xl">
+                        <i data-lucide="user-plus" class="w-6 h-6"></i>
+                    </div>
+                    <h2 class="text-xl font-black uppercase tracking-tighter">Pessoas</h2>
                 </div>
-                <button id="closeModalBtn" class="p-2 hover:bg-white/10 rounded-xl transition-colors">
+                <button id="closeModalBtn" class="p-2 hover:bg-black/10 rounded-xl transition-colors">
                     <i data-lucide="x" class="w-6 h-6"></i>
                 </button>
             </div>
 
-            <div class="p-6">
-                <div class="flex gap-2 mb-4">
-                    <button id="showSingleAdd" class="flex-1 py-2 text-sm font-bold border-b-2 border-[#4a36d1] text-[#4a36d1]">Individual</button>
-                    <button id="showBulkAdd" class="flex-1 py-2 text-sm font-bold border-b-2 border-transparent text-slate-400 hover:text-slate-600">Em Massa</button>
+            <div class="p-8 space-y-8">
+                <div class="flex p-1 bg-black rounded-2xl border border-white/5">
+                    <button id="showSingleAdd" class="flex-1 py-3 text-[10px] font-black uppercase tracking-widest rounded-xl bg-yellow-500 text-black transition-all">Individual</button>
+                    <button id="showBulkAdd" class="flex-1 py-3 text-[10px] font-black uppercase tracking-widest rounded-xl text-zinc-500 hover:text-yellow-500 transition-all">Em Massa</button>
                 </div>
 
                 <!-- Single Add Form -->
-                <form id="addVolunteerForm" class="flex gap-2 mb-6">
-                    <div class="relative flex-1">
-                        <i data-lucide="user" class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400"></i>
+                <form id="addVolunteerForm" class="flex flex-col gap-4">
+                    <div class="relative">
+                        <i data-lucide="user" class="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-yellow-500/40"></i>
                         <input
                             id="newVolunteerName"
                             type="text"
-                            placeholder="Nome da pessoa..."
-                            class="w-full pl-10 pr-4 py-3 bg-slate-50 border border-slate-200 rounded-xl outline-none focus:border-indigo-400 focus:ring-4 focus:ring-indigo-50 transition-all"
+                            placeholder="NOME COMPLETO"
+                            class="w-full pl-12 pr-4 py-4 bg-black border border-white/10 rounded-2xl outline-none focus:border-yellow-500/50 text-yellow-500 text-sm font-bold placeholder:text-zinc-700 transition-all"
                         />
                     </div>
                     <button
                         type="submit"
                         id="addBtn"
-                        class="bg-[#4a36d1] text-white px-4 py-3 rounded-xl font-bold shadow-lg shadow-indigo-200 hover:bg-[#3b2ab8] transition-all active:scale-95 flex items-center gap-2"
+                        class="bg-yellow-500 text-black py-4 rounded-2xl font-black uppercase tracking-widest text-xs shadow-lg hover:bg-yellow-400 transition-all active:scale-95 flex items-center justify-center gap-3"
                     >
-                        <i data-lucide="user-plus" class="w-5 h-5"></i>
-                        Add
+                        <i data-lucide="plus" class="w-5 h-5"></i>
+                        Cadastrar
                     </button>
                 </form>
 
                 <!-- Bulk Add Form (Hidden by default) -->
-                <div id="bulkAddContainer" class="hidden mb-6 space-y-3">
+                <div id="bulkAddContainer" class="hidden space-y-4">
                     <textarea 
                         id="bulkNamesInput" 
-                        rows="4" 
-                        placeholder="Cole aqui uma lista de nomes (um por linha)..."
-                        class="w-full p-4 bg-slate-50 border border-slate-200 rounded-xl outline-none focus:border-indigo-400 focus:ring-4 focus:ring-indigo-50 transition-all text-sm"
+                        rows="5" 
+                        placeholder="COLE A LISTA DE NOMES AQUI..."
+                        class="w-full p-5 bg-black border border-white/10 rounded-2xl outline-none focus:border-yellow-500/50 text-yellow-500 text-sm font-bold placeholder:text-zinc-700 transition-all custom-scrollbar"
                     ></textarea>
                     <button
                         id="bulkAddBtn"
-                        class="w-full bg-[#4a36d1] text-white py-3 rounded-xl font-bold shadow-lg shadow-indigo-200 hover:bg-[#3b2ab8] transition-all active:scale-95 flex items-center justify-center gap-2"
+                        class="w-full bg-yellow-500 text-black py-4 rounded-2xl font-black uppercase tracking-widest text-xs shadow-lg hover:bg-yellow-400 transition-all active:scale-95 flex items-center justify-center gap-3"
                     >
                         <i data-lucide="layers" class="w-5 h-5"></i>
                         Importar Lista
                     </button>
                 </div>
 
-                <div class="flex items-center justify-between mb-4 px-1">
-                    <h3 class="text-xs font-black uppercase tracking-widest text-slate-400">Lista de Pessoas</h3>
-                    <div class="flex gap-2">
-                        <button id="exportBtn" title="Exportar para arquivo" class="p-1.5 text-slate-400 hover:text-[#4a36d1] hover:bg-indigo-50 rounded-lg transition-all">
-                            <i data-lucide="download" class="w-4 h-4"></i>
-                        </button>
-                        <label for="importFile" title="Importar de arquivo" class="p-1.5 text-slate-400 hover:text-[#4a36d1] hover:bg-indigo-50 rounded-lg transition-all cursor-pointer">
-                            <i data-lucide="upload" class="w-4 h-4"></i>
-                            <input type="file" id="importFile" class="hidden" accept=".json">
-                        </label>
+                <div class="space-y-4">
+                    <div class="flex items-center justify-between px-1">
+                        <h3 class="text-[10px] font-black uppercase tracking-[0.3em] text-zinc-600">Cadastrados</h3>
+                        <div class="flex gap-3">
+                            <button id="exportBtn" title="Exportar" class="p-2 text-zinc-500 hover:text-yellow-500 hover:bg-yellow-500/10 rounded-xl transition-all">
+                                <i data-lucide="download" class="w-4 h-4"></i>
+                            </button>
+                            <label for="importFile" title="Importar" class="p-2 text-zinc-500 hover:text-yellow-500 hover:bg-yellow-500/10 rounded-xl transition-all cursor-pointer">
+                                <i data-lucide="upload" class="w-4 h-4"></i>
+                                <input type="file" id="importFile" class="hidden" accept=".json">
+                            </label>
+                        </div>
                     </div>
-                </div>
 
-                <div id="volunteersList" class="max-h-[250px] overflow-y-auto space-y-2 pr-2 custom-scrollbar">
-                    <!-- Volunteers will be rendered here -->
+                    <div id="volunteersList" class="max-h-[200px] overflow-y-auto space-y-3 pr-2 custom-scrollbar">
+                        <!-- Volunteers will be rendered here -->
+                    </div>
                 </div>
             </div>
         </div>
@@ -368,10 +396,10 @@ service cloud.firestore {
                 daysContainer.innerHTML = '';
                 days.forEach((day) => {
                     const isSunday = day.dayOfWeek === WeekDay.SUNDAY;
-                    const headerBg = isSunday ? "bg-[#FFF9F2]" : "bg-[#F5F7FF]";
-                    const accentColor = isSunday ? "text-orange-600" : "text-[#4a36d1]";
-                    const iconBg = isSunday ? 'bg-orange-100 text-orange-600' : 'bg-indigo-100 text-[#4a36d1]';
-                    const badgeClass = isSunday ? 'border-orange-200 text-orange-600 bg-orange-50' : 'border-indigo-200 text-[#4a36d1] bg-indigo-50';
+                    const headerBg = "bg-zinc-900";
+                    const accentColor = "text-yellow-500";
+                    const iconBg = 'bg-yellow-500/10 text-yellow-500';
+                    const badgeClass = 'border-yellow-500/20 text-yellow-500/60 bg-yellow-500/5';
                     
                     const weekdayName = day.date.toLocaleDateString('pt-BR', { weekday: 'long' });
                     const capitalizedWeekday = weekdayName.charAt(0).toUpperCase() + weekdayName.slice(1).split('-')[0];
@@ -382,13 +410,13 @@ service cloud.firestore {
                     });
 
                     const dayCard = document.createElement('div');
-                    dayCard.className = "bg-white rounded-3xl border border-slate-100 shadow-sm overflow-hidden transition-all hover:shadow-lg hover:-translate-y-0.5";
+                    dayCard.className = "bg-zinc-900 rounded-[40px] border border-white/5 shadow-2xl overflow-hidden transition-all hover:border-yellow-500/20 group";
                     
                     let shiftsHtml = '';
                     day.shifts.forEach((shift) => {
                         const isMorning = shift.type === ShiftType.MORNING;
                         const shiftIcon = isMorning ? 'sun' : 'moon';
-                        const shiftColor = isMorning ? "text-orange-600" : "text-[#4a36d1]";
+                        const shiftColor = "text-yellow-500/80";
 
                         let slotsHtml = '';
                         for (let i = 0; i < shift.slots; i++) {
@@ -401,8 +429,8 @@ service cloud.firestore {
                                 .join('');
 
                             slotsHtml += `
-                                <div class="relative flex items-center w-full group">
-                                    <div class="absolute left-3 text-slate-400 z-10">
+                                <div class="relative flex items-center w-full group/slot">
+                                    <div class="absolute left-4 text-yellow-500/30 z-10 group-focus-within/slot:text-yellow-500 transition-colors">
                                         <i data-lucide="user" class="w-4 h-4"></i>
                                     </div>
                                     <select
@@ -410,25 +438,22 @@ service cloud.firestore {
                                         data-date="${day.date.toISOString().split('T')[0]}"
                                         data-shift="${shift.type}"
                                         data-index="${i}"
-                                        class="slot-select w-full pl-9 pr-10 py-3 text-sm appearance-none border rounded-xl transition-all duration-200 outline-none cursor-pointer border-slate-200 bg-slate-50/50 hover:bg-white focus:bg-white focus:border-indigo-400 focus:ring-4 focus:ring-indigo-50 ${!currentValue ? 'text-slate-400 italic' : 'text-slate-900 font-medium'}"
+                                        class="slot-select w-full pl-11 pr-10 py-4 text-xs appearance-none border rounded-2xl transition-all duration-300 outline-none cursor-pointer border-white/5 bg-black hover:border-yellow-500/30 focus:border-yellow-500 focus:ring-4 focus:ring-yellow-500/5 ${!currentValue ? 'text-zinc-600' : 'text-yellow-500 font-bold'}"
                                     >
-                                        <option value="">Selecione um voluntário...</option>
+                                        <option value="">Selecione...</option>
                                         ${options}
                                     </select>
-                                    <div class="absolute right-3 flex items-center gap-2 pointer-events-none">
-                                        <i data-lucide="chevron-down" class="w-4 h-4 text-slate-300 group-hover:text-indigo-400 transition-colors"></i>
-                                    </div>
                                 </div>
                             `;
                         }
 
                         shiftsHtml += `
-                            <div class="space-y-5">
-                                <div class="flex items-center gap-2 text-[11px] font-black uppercase tracking-[0.15em] ${shiftColor}">
+                            <div class="space-y-6">
+                                <div class="flex items-center gap-3 text-[10px] font-black uppercase tracking-[0.3em] ${shiftColor} opacity-60">
                                     <i data-lucide="${shiftIcon}" class="w-4 h-4"></i>
                                     TURNO ${shift.type}
                                 </div>
-                                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
                                     ${slotsHtml}
                                 </div>
                             </div>
@@ -436,22 +461,25 @@ service cloud.firestore {
                     });
 
                     dayCard.innerHTML = `
-                        <div class="px-6 py-5 flex items-center justify-between ${headerBg} border-b border-slate-100/50">
-                            <div class="flex items-center gap-3">
-                                <div class="p-2 rounded-xl ${iconBg}">
-                                    <i data-lucide="calendar" class="w-5 h-5"></i>
+                        <div class="px-8 py-7 flex items-center justify-between ${headerBg} border-b border-white/5">
+                            <div class="flex items-center gap-4">
+                                <div class="p-3 rounded-2xl ${iconBg} border border-yellow-500/10">
+                                    <i data-lucide="calendar" class="w-6 h-6"></i>
                                 </div>
-                                <h2 class="text-lg md:text-xl font-extrabold tracking-tight ${accentColor}">
-                                    ${capitalizedWeekday} - ${formattedDate}
-                                </h2>
+                                <div class="flex flex-col">
+                                    <h2 class="text-xl font-black tracking-tighter uppercase ${accentColor}">
+                                        ${capitalizedWeekday}
+                                    </h2>
+                                    <p class="text-[10px] font-bold text-zinc-500 tracking-widest uppercase">${formattedDate}</p>
+                                </div>
                             </div>
                             <div class="hidden sm:block">
-                                <span class="text-[10px] font-black uppercase px-3 py-1.5 rounded-full border ${badgeClass}">
-                                    ${isSunday ? 'Culto de Domingo' : 'Culto de Quarta'}
+                                <span class="text-[9px] font-black uppercase px-4 py-2 rounded-xl border ${badgeClass} tracking-widest">
+                                    ${isSunday ? 'DOMINGO' : 'QUARTA-FEIRA'}
                                 </span>
                             </div>
                         </div>
-                        <div class="p-6 space-y-10">
+                        <div class="p-8 space-y-12">
                             ${shiftsHtml}
                         </div>
                     `;
@@ -462,14 +490,14 @@ service cloud.firestore {
             // Render Volunteers in Modal
             volunteersListEl.innerHTML = '';
             if (state.volunteersList.length === 0) {
-                volunteersListEl.innerHTML = '<p class="text-center text-slate-400 py-8 italic">Nenhuma pessoa cadastrada.</p>';
+                volunteersListEl.innerHTML = '<p class="text-center text-zinc-600 py-12 text-xs font-bold uppercase tracking-widest">Vazio</p>';
             } else {
                 state.volunteersList.sort((a, b) => a.name.localeCompare(b.name)).forEach((v) => {
                     const div = document.createElement('div');
-                    div.className = "flex items-center justify-between p-4 bg-slate-50 rounded-2xl group hover:bg-slate-100 transition-colors";
+                    div.className = "flex items-center justify-between p-5 bg-black rounded-2xl group border border-white/5 hover:border-yellow-500/20 transition-all";
                     div.innerHTML = `
-                        <span class="font-semibold text-slate-700">${v.name}</span>
-                        <button data-id="${v.id}" class="remove-volunteer-btn p-2 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-all">
+                        <span class="font-bold text-yellow-500 text-sm uppercase tracking-tight">${v.name}</span>
+                        <button data-id="${v.id}" class="remove-volunteer-btn p-2 text-zinc-600 hover:text-red-500 hover:bg-red-500/10 rounded-xl transition-all">
                             <i data-lucide="trash-2" class="w-4 h-4"></i>
                         </button>
                     `;
@@ -666,19 +694,19 @@ service cloud.firestore {
         }
 
         showSingleAdd.onclick = () => {
-            showSingleAdd.classList.add('border-[#4a36d1]', 'text-[#4a36d1]');
-            showSingleAdd.classList.remove('border-transparent', 'text-slate-400');
-            showBulkAdd.classList.remove('border-[#4a36d1]', 'text-[#4a36d1]');
-            showBulkAdd.classList.add('border-transparent', 'text-slate-400');
+            showSingleAdd.classList.add('bg-yellow-500', 'text-black');
+            showSingleAdd.classList.remove('text-zinc-500', 'hover:text-yellow-500');
+            showBulkAdd.classList.remove('bg-yellow-500', 'text-black');
+            showBulkAdd.classList.add('text-zinc-500', 'hover:text-yellow-500');
             addVolunteerForm.classList.remove('hidden');
             bulkAddContainer.classList.add('hidden');
         };
 
         showBulkAdd.onclick = () => {
-            showBulkAdd.classList.add('border-[#4a36d1]', 'text-[#4a36d1]');
-            showBulkAdd.classList.remove('border-transparent', 'text-slate-400');
-            showSingleAdd.classList.remove('border-[#4a36d1]', 'text-[#4a36d1]');
-            showSingleAdd.classList.add('border-transparent', 'text-slate-400');
+            showBulkAdd.classList.add('bg-yellow-500', 'text-black');
+            showBulkAdd.classList.remove('text-zinc-500', 'hover:text-yellow-500');
+            showSingleAdd.classList.remove('bg-yellow-500', 'text-black');
+            showSingleAdd.classList.add('text-zinc-500', 'hover:text-yellow-500');
             addVolunteerForm.classList.add('hidden');
             bulkAddContainer.classList.remove('hidden');
         };
