@@ -322,8 +322,9 @@ service cloud.firestore {
                         date: new Date(date),
                         dayOfWeek,
                         shifts: [
-                            { type: ShiftType.MORNING, slots: 2 },
-                            { type: ShiftType.NIGHT, slots: 2 }
+                            { type: 'Culto Manhã às 10:30', slots: 2 },
+                            { type: 'Culto da Tarde às 17:00', slots: 2 },
+                            { type: 'Culto da Noite às 18:30', slots: 2 }
                         ]
                     });
                 } else if (dayOfWeek === WeekDay.WEDNESDAY) {
@@ -344,7 +345,14 @@ service cloud.firestore {
 
         const getSlotId = (date, shift, index) => {
             const dateStr = date.toISOString().split('T')[0];
-            const shiftKey = shift === ShiftType.MORNING ? 'morning' : 'night';
+            let shiftKey = 'night';
+            if (shift.includes('Manhã') || shift === 'Manhã') {
+                shiftKey = 'morning';
+            } else if (shift.includes('Tarde')) {
+                shiftKey = 'afternoon';
+            } else if (shift.includes('Noite') || shift === 'Noite') {
+                shiftKey = 'night';
+            }
             return `${dateStr}-${shiftKey}-${index}`;
         };
 
@@ -414,8 +422,14 @@ service cloud.firestore {
                     
                     let shiftsHtml = '';
                     day.shifts.forEach((shift) => {
-                        const isMorning = shift.type === ShiftType.MORNING;
-                        const shiftIcon = isMorning ? 'sun' : 'moon';
+                        let shiftIcon = 'moon';
+                        if (shift.type.includes('Manhã') || shift.type === 'Manhã') {
+                            shiftIcon = 'sun';
+                        } else if (shift.type.includes('Tarde')) {
+                            shiftIcon = 'sunset';
+                        } else if (shift.type.includes('Noite') || shift.type === 'Noite') {
+                            shiftIcon = 'moon';
+                        }
                         const shiftColor = "text-yellow-500/80";
 
                         let slotsHtml = '';
@@ -438,7 +452,7 @@ service cloud.firestore {
                                         data-date="${day.date.toISOString().split('T')[0]}"
                                         data-shift="${shift.type}"
                                         data-index="${i}"
-                                        class="slot-select w-full pl-11 pr-10 py-4 text-xs appearance-none border rounded-2xl transition-all duration-300 outline-none cursor-pointer border-white/5 bg-black hover:border-yellow-500/30 focus:border-yellow-500 focus:ring-4 focus:ring-yellow-500/5 ${!currentValue ? 'text-zinc-600' : 'text-yellow-500 font-bold'}"
+                                        class="slot-select w-full pl-11 pr-10 py-4 text-base appearance-none border rounded-2xl transition-all duration-300 outline-none cursor-pointer border-white/5 bg-black hover:border-yellow-500/30 focus:border-yellow-500 focus:ring-4 focus:ring-yellow-500/5 ${!currentValue ? 'text-zinc-600' : 'text-yellow-500 font-bold'}"
                                     >
                                         <option value="">Selecione...</option>
                                         ${options}
@@ -449,7 +463,7 @@ service cloud.firestore {
 
                         shiftsHtml += `
                             <div class="space-y-6">
-                                <div class="flex items-center gap-3 text-[10px] font-black uppercase tracking-[0.3em] ${shiftColor} opacity-60">
+                                <div class="flex items-center gap-3 text-sm font-black uppercase tracking-[0.3em] ${shiftColor} opacity-60">
                                     <i data-lucide="${shiftIcon}" class="w-4 h-4"></i>
                                     TURNO ${shift.type}
                                 </div>
@@ -467,14 +481,14 @@ service cloud.firestore {
                                     <i data-lucide="calendar" class="w-6 h-6"></i>
                                 </div>
                                 <div class="flex flex-col">
-                                    <h2 class="text-xl font-black tracking-tighter uppercase ${accentColor}">
+                                    <h2 class="text-lg font-black tracking-tighter uppercase ${accentColor}">
                                         ${capitalizedWeekday}
                                     </h2>
-                                    <p class="text-[10px] font-bold text-zinc-500 tracking-widest uppercase">${formattedDate}</p>
+                                    <p class="text-sm font-bold text-zinc-500 tracking-widest uppercase">${formattedDate}</p>
                                 </div>
                             </div>
                             <div class="hidden sm:block">
-                                <span class="text-[9px] font-black uppercase px-4 py-2 rounded-xl border ${badgeClass} tracking-widest">
+                                <span class="text-xs font-black uppercase px-4 py-2 rounded-xl border ${badgeClass} tracking-widest">
                                     ${isSunday ? 'DOMINGO' : 'QUARTA-FEIRA'}
                                 </span>
                             </div>
@@ -496,7 +510,7 @@ service cloud.firestore {
                     const div = document.createElement('div');
                     div.className = "flex items-center justify-between p-5 bg-black rounded-2xl group border border-white/5 hover:border-yellow-500/20 transition-all";
                     div.innerHTML = `
-                        <span class="font-bold text-yellow-500 text-sm uppercase tracking-tight">${v.name}</span>
+                        <span class="font-bold text-yellow-500 text-base uppercase tracking-tight">${v.name}</span>
                         <button data-id="${v.id}" class="remove-volunteer-btn p-2 text-zinc-600 hover:text-red-500 hover:bg-red-500/10 rounded-xl transition-all">
                             <i data-lucide="trash-2" class="w-4 h-4"></i>
                         </button>
